@@ -1,0 +1,48 @@
+import "ocidl.idl";
+
+typedef enum { FSComDirectoryType = 0, FSComFileType = 1 } FSComDescTypeEnum;
+
+typedef struct FSComFileDescription
+{
+    unsigned char name[256];
+    unsigned char path[256];
+    unsigned long long size;
+    FSComDescTypeEnum type;
+} FSComFileDescriptionStruct;
+
+[uuid(CEDAE3D8-F3D8-427D-AA1D-5DB1741FF917), version(1.0)]
+interface IFileSystemComponent : IUnknown
+{
+
+    // TODO: replace unsigned char* by BSTR
+    HRESULT RemoveStorage();
+    HRESULT CreateFile([ref, in] char* name);
+    HRESULT CreateDirectory([ref, in] char* name);
+    HRESULT RemoveDirectory([ref, in] char* name);
+    HRESULT RemoveFile([ref, in] char* name);
+
+    HRESULT WriteFile([ref, in] char* name, [ref, in] char* buffer, [in] unsigned long long cb, 
+        [in] unsigned long long write_position,
+        [ref, out]unsigned long long* written_bytes, 
+        unsigned long long* after_position);
+
+    HRESULT ReadFile([ref, in]char* name, [ref, out] char* buffer, [in] unsigned long long cb, 
+        [in] unsigned long long position,
+        [ref, out] unsigned long long* readed_bytes, 
+        [ref, out] unsigned long long * after_position);
+
+    HRESULT GetFileDescription([ref, in] char* name, [ref, in, out] FSComFileDescriptionStruct** desc);
+
+    HRESULT GetDirectoryList([ref, in] char* name, [ref, in, out] FSComFileDescriptionStruct** descriptions, 
+        [out] unsigned long long* count);
+}
+
+[uuid(36DCC467-4C00-448A-A25D-3F99BF0E633E), version(1.0)]
+library FSComponentLib
+{
+    [uuid(CBD410A7-C5D8-480F-9E68-A6DBD6D7E537), version(1.0)]
+    coclass FSComponent
+    {
+        [default] interface IFileSystemComponent;
+    }
+};
