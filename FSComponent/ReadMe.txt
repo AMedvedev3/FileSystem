@@ -35,6 +35,8 @@ StdAfx.h, StdAfx.cpp
 /////////////////////////////////////////////////////////////////////////////
 Other notes:
 
+This is a COM component that provides open interface to FileSystem.
+
 AppModule class and auto registration source code got from the public sources
 http://www.codeproject.com/Articles/654343/Authoring-and-consuming-classic-COM-components-wit
 They are published under CPOL license and can be used freely
