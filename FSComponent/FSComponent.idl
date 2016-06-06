@@ -2,6 +2,7 @@ import "ocidl.idl";
 
 typedef enum { FSComDirectoryType = 0, FSComFileType = 1 } FSComDescTypeEnum;
 
+[helpstring("Defines file or directory description. 'Name' - file or directory name, 'size' - size of file, 'path' - full path, 'type' - directory or file ")]
 typedef struct FSComFileDescription
 {
     unsigned char name[256];
@@ -13,26 +14,38 @@ typedef struct FSComFileDescription
 [uuid(CEDAE3D8-F3D8-427D-AA1D-5DB1741FF917), version(1.0)]
 interface IFileSystemComponent : IUnknown
 {
-
     // TODO: replace unsigned char* by BSTR
+    [helpstring("Removes current storage. Destroys all data in File System")]
     HRESULT RemoveStorage();
+
+    [helpstring("Creates new empty file, 'name' is the full path to file")]
     HRESULT CreateFile([ref, in] char* name);
+
+    [helpstring("Creates new empty directory, 'name' is the full path to the directory")]
     HRESULT CreateDirectory([ref, in] char* name);
+
+    [helpstring("Removes existing directory, 'name' is the full path to the directory")]
     HRESULT RemoveDirectory([ref, in] char* name);
+
+    [helpstring("Removes existing file, 'name' is the full path to the file")]
     HRESULT RemoveFile([ref, in] char* name);
 
+    [helpstring("Writes 'buffer' to the file starting from 'write_position', 'name' is the full path to the file. Returns 'after_position' in file after write, actually 'written_bytes'")]
     HRESULT WriteFile([ref, in] char* name, [ref, in] char* buffer, [in] unsigned long long cb, 
         [in] unsigned long long write_position,
         [ref, out]unsigned long long* written_bytes, 
         unsigned long long* after_position);
 
+    [helpstring("Reads 'buffer' from the file starting from 'position', 'name' is the full path to the file. Returns 'after_position' in file after read, actually 'readed_bytes'")]
     HRESULT ReadFile([ref, in]char* name, [ref, out] char* buffer, [in] unsigned long long cb, 
         [in] unsigned long long position,
         [ref, out] unsigned long long* readed_bytes, 
         [ref, out] unsigned long long * after_position);
 
+    [helpstring("Returns file description. Description should be freed by client using CoTaskMemFree.")]
     HRESULT GetFileDescription([ref, in] char* name, [ref, in, out] FSComFileDescriptionStruct** desc);
 
+    [helpstring("Returns array of files and sub directories descriptions that directory contains. The array should be freed  by client using CoTaskMemFree.")]
     HRESULT GetDirectoryList([ref, in] char* name, [ref, in, out] FSComFileDescriptionStruct** descriptions, 
         [out] unsigned long long* count);
 }

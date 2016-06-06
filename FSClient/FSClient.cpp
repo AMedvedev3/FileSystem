@@ -1,3 +1,11 @@
+/**
+@file
+Test COM client for FileSystem
+@author Alexey Medvedev
+*/
+
+// This is a console app that instantiate FSComponent and tests public FileSystem functions
+
 #include "stdafx.h"
 #include <comdef.h>
 #include <comutil.h>
@@ -27,7 +35,6 @@ int PrintError(unsigned int line, HRESULT hr, const wchar_t* desc)
     std::wcout << "Error: " << desc << std::endl;
     return hr;
 }
-
 
 // TODO: return only description as string others as a hr
 std::wstring GetComErrorDescription(ComPtr<IFileSystemComponent>& fs)

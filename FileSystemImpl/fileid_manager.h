@@ -1,13 +1,20 @@
 #pragma once
+/**
+@file
+FileIDManager class definition for FileSystem
+@author Alexey Medvedev
+*/
 #include "common.h"
 
 using TFreeFileIds = shared_list<TFileID>;
 
-// TODO: single instance per FileSystem, prevent copying, creating, etc.
+// FileIDManager tracks usage of File Ids.
+// It keeps list of freed ID's released by removed files.
 class FileIDManager
 {
 public:
 
+    // Request free file id from FieldIDManager
     TFileID get_free_id()
     {
         TFileID id = 0;
@@ -23,8 +30,7 @@ public:
         return id;
     }
 
-
-    // TODO: make the test to check last Id
+    // Register id of removed file or directory
     void reg_deleted_file(TFileID id)
     {
         // check that removed last file in the list then just decrease m_last_free_id
@@ -34,6 +40,7 @@ public:
             m_last_free_id--;
     }
 
+    // Factory for construct the FileIDManager in FileSystem
     static FileIDManager* load_or_create(const std::shared_ptr<bip::managed_mapped_file>& seg)
     {
         FileIDManager* file_id_manager = seg->find_or_construct <FileIDManager>("FileIDManager")();

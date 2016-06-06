@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AppModule.h"
+#include "log.h"
 
 static AppModule s_Module;
 
@@ -25,6 +26,9 @@ HRESULT __stdcall DllCanUnloadNow()
 
 BOOL __stdcall DllMain(HINSTANCE module, DWORD reason, void*)
 {
+    // setup logging level
+    g_level = boost::log::trivial::severity_level::error;
+
     if (reason == DLL_PROCESS_ATTACH)
     {
         DisableThreadLibraryCalls(module);

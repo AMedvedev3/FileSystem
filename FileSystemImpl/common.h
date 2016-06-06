@@ -1,4 +1,9 @@
 #pragma once
+/**
+@file
+Common definitions, typedefs for FileSystem implementation
+@author Alexey Medvedev
+*/
 
 #include <Windows.h>
 

@@ -14,10 +14,11 @@ STDMETHODIMP FSComponent::CreateFile(unsigned char* name)
     catch (boost::exception const& e)
     {
        return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR, 
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -32,10 +33,11 @@ STDMETHODIMP FSComponent::CreateDirectory(unsigned char* name)
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR, 
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -51,10 +53,11 @@ STDMETHODIMP FSComponent::RemoveDirectory(unsigned char* name)
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -70,10 +73,11 @@ STDMETHODIMP FSComponent::RemoveFile(unsigned char* name)
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -96,10 +100,11 @@ STDMETHODIMP FSComponent::WriteFile(unsigned char* name, unsigned char* buffer, 
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -122,10 +127,11 @@ STDMETHODIMP FSComponent::ReadFile(unsigned char* name, unsigned char* buffer, u
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -140,17 +146,17 @@ STDMETHODIMP FSComponent::RemoveStorage()
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
 
 STDMETHODIMP FSComponent::GetFileDescription(unsigned char* name, FSComFileDescriptionStruct** out_desc)
 {
-    // TODO: allocate struct CoTaskMemAlloc();
     try
     {
         FileSystem fs;
@@ -168,10 +174,11 @@ STDMETHODIMP FSComponent::GetFileDescription(unsigned char* name, FSComFileDescr
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
@@ -202,30 +209,19 @@ STDMETHODIMP FSComponent::GetDirectoryList(unsigned char* name, FSComFileDescrip
     catch (boost::exception const& e)
     {
         return ExceptionToComError(e, _uuidof(IFileSystemComponent));
-    }// TODO: process Unknown exceptions
+    }
     catch (...)
     {
-        return E_FAIL;
+        return ExceptionToComError(fs_error::UNKNOWN_ERROR,
+            "Unknown error", _uuidof(IFileSystemComponent));
     }
     return S_OK;
 }
 
-//catch (boost::exception const& e) \
-//{ if (int const * c = boost::get_error_info<errinfo_fs_code>(e)) \
-//reply.Error(*c, boost::diagnostic_information(e)); \
-//else reply.Error(::rpc_error::UNKNOWN_ERROR, boost::diagnostic_information(e)); \
-//return; } \
-//catch (std::exception const& e) \
-//{ reply.Error(::rpc_error::UNKNOWN_ERROR, e.what()); return; }
 
-
-HRESULT FSComponent::ExceptionToComError(boost::exception const& e, REFIID iid)
+HRESULT FSComponent::ExceptionToComError(int code, const std::string& short_desc, REFIID iid)
 {
     HRESULT hr;
-
-    int code = *boost::get_error_info<errinfo_fs_code>(e);
-    std::string short_desc = *boost::get_error_info<errinfo_message>(e);
-    std::string desc = boost::diagnostic_information(e);
 
     ComPtr<ICreateErrorInfo> createErrorInfo;
     hr = CreateErrorInfo(&createErrorInfo);
@@ -244,13 +240,27 @@ HRESULT FSComponent::ExceptionToComError(boost::exception const& e, REFIID iid)
     if (FAILED(hr))
         return hr;
 
+    if (errorInfo == nullptr)
+        return E_FAIL;
+
     // Make the error information available to the client.
     hr = SetErrorInfo(0, errorInfo.Detach());
     if (FAILED(hr))
         return hr;
-    
+
     // Return the actual error code.
     return fs_error::fs_hr(code);
+}
+
+HRESULT FSComponent::ExceptionToComError(boost::exception const& e, REFIID iid)
+{
+    HRESULT hr;
+
+    int code = *boost::get_error_info<errinfo_fs_code>(e);
+    std::string short_desc = *boost::get_error_info<errinfo_message>(e);
+    std::string desc = boost::diagnostic_information(e);
+
+    return ExceptionToComError(code, short_desc, iid);
 }
 
 void FSComponent::copy(FSComFileDescription& c_desc, FileDescription& f_desc)

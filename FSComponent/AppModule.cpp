@@ -1,3 +1,10 @@
+/**
+@file
+AppModule implementation
+@author Marius Bancila
+http://www.codeproject.com/Articles/654343/Authoring-and-consuming-classic-COM-components-wit
+*/
+
 #include "stdafx.h"
 #include "AppModule.h"
 #include "Registration.h"

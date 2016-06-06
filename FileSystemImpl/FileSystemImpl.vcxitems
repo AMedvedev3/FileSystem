@@ -14,13 +14,6 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\TestFileSys\directory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\TestFileSys\file.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\TestFileSys\file_system.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\TestFileSys\helper.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)exception.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)common.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)directory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)exception.h" />
@@ -30,5 +23,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)file_system.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)helper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)log.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)directory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)exception.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)file.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)file_system.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)helper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)log.cpp" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,14 @@
+/**
+@file
+Directory class for FileSystem implementation
+@author Alexey Medvedev
+*/
+
 #include "helper.h"
 #include "directory.h"
 #include "file_system.h"
+#include "exception.h"
+#include "log.h"
 
 const char* ROOT_DIRECTORY_NAME = ".";
 
@@ -10,6 +18,7 @@ Directory::Directory(const char* name, TDirectoryPtr parent, FileSystem& fs)
     {
         this->parent = parent;
         this->description = fs.add_file_desc(name, NULL, 0);
+        this->description->type = DescriptionType::DirectoryType;
 
         this->sub_directories = fs.m_seg->construct<TDirectorySet>(noname)
             (
@@ -26,7 +35,6 @@ Directory::Directory(const char* name, TDirectoryPtr parent, FileSystem& fs)
     catch (...)
     {
         // TODO: move to clean() function
-        //TODO: do that in the destructor?
         if (this->description != nullptr)
         {
             fs.m_file_descriptions->erase(this->description->fileID);
@@ -45,8 +53,10 @@ Directory::Directory(const char* name, TDirectoryPtr parent, FileSystem& fs)
             this->files = nullptr;
         }
          
-
-        throw;
+        BOOST_THROW_EXCEPTION(common_exception()
+            << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
+            << errinfo_message("Error in Directory instance construction."));
+        
     }
 }
 
@@ -56,9 +66,10 @@ TDirectoryPtr Directory::construct(const char* name, TDirectoryPtr parent,
 {
     if (l > 1)
     {
-        std::cout << "Unrecoverable Error: not enough memory to create directory." << std::endl;
-        assert(0);
-        // TODO: throw exception
+        LF << "Unrecoverable Error: not enough memory to create directory." ;
+        BOOST_THROW_EXCEPTION(common_exception()
+            << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
+            << errinfo_message("Unrecoverable Error: not enough memory to create directory."));
     }
 
     TDirectoryPtr new_dir = NULL;
@@ -84,19 +95,20 @@ void Directory::remove_directory(const shared_string& name)
     auto it = sub_directories->find(name);
     if (it != sub_directories->end())
     {
-        Directory& dir = it->second; // ??
+        Directory& dir = it->second;
         assert(dir.sub_directories);
-        //// check that sub directories and files set are empty
+        // check that sub directories and files set are empty
         if (dir.sub_directories->empty())
         {
             sub_directories->erase(it);
-            // TODO: replace by logging
-            std::cout << "Direcory \"" << name << "\" successfully deleted" << std::endl;
+            LF << "Direcory \"" << name << "\" successfully deleted" ;
         }
         else
         {
-            // TODO: replace by exception
-            std::cout << "Error: Direcory \"" << name << "\" is not empty" << std::endl;
+            LF << "Error: Direcory \"" << name << "\" is not empty" ;
+            BOOST_THROW_EXCEPTION(common_exception()
+                << errinfo_fs_code(fs_error::DIRECTORY_IS_NOT_EMPTY)
+                << errinfo_message("Error in removing directory. Directory is not empty."));
         }
     }
 }
@@ -108,13 +120,15 @@ TDirectoryPtr Directory::add_directory(FileSystem& fs, const char* name)
     assert(fs.m_seg);
 
     TDirectoryPtr new_dir = Directory::construct(name, this, fs);
-    std::cout << "New dir \"" << new_dir->get_name() << "\"" << std::endl;
+    LF << "New dir \"" << new_dir->get_name() << "\"" ;
 
     auto rc = sub_directories->insert(std::make_pair(mkstr(name, fs), *new_dir));
     if (!rc.second)
     {
-        // TODO: directory already exists exception
-        std::cout << "Directory \"" << name << "\" already exists in directory \"" << get_name() << std::endl;
+        LF << "Directory \"" << name << "\" already exists in directory \"" << get_name() ;
+        BOOST_THROW_EXCEPTION(common_exception()
+            << errinfo_fs_code(fs_error::DIRECTORY_ALREADY_EXIST)
+            << errinfo_message("Error in adding directory. Directory already exists."));
     }
     return new_dir;
 }
@@ -143,9 +157,10 @@ TDirectoryPtr Directory::find_directory(FileSystem& fs, TDirectoryPtr& root, con
     ParsedPath p = ParsedPath::parse_dir_path(path);
     if (p.directories.empty())
     {
-        std::cout << "Error: invalid directory path" << std::endl;
-        assert(0);
-        return nullptr;
+        LF << "Error: invalid directory path" ;
+        BOOST_THROW_EXCEPTION(common_exception()
+            << errinfo_fs_code(fs_error::INVALID_DIRECTORY_NAME)
+            << errinfo_message("Cannot find directory. Invalid directory path format."));
     }
     
     TDirectoryPtr dir = root;
@@ -158,10 +173,6 @@ TDirectoryPtr Directory::find_directory(FileSystem& fs, TDirectoryPtr& root, con
         if (it == p.directories.begin() && *it == root->get_name())
             continue;
 
-        // TODO: TEMP test only
-        auto sz = dir->sub_directories->size();
-
-
         cur_path.append(*it).append("/");
         auto pair = dir->sub_directories->find( mkstr((*it).c_str(), fs) );
         if (pair != dir->sub_directories->end())
@@ -170,13 +181,13 @@ TDirectoryPtr Directory::find_directory(FileSystem& fs, TDirectoryPtr& root, con
         }
         else
         {
-            std::cout << "Error: path not found \"" << cur_path << "\"" << std::endl;
-            std::cout << "Sub directories list: ";
+            LF << "Error: path not found \"" << cur_path << "\"" ;
+            LF << "Sub directories list: ";
             for (auto it1 = dir->sub_directories->begin(); it1 != dir->sub_directories->end(); it1++)
             {
-                std::cout << it1->second.get_name() << ";" ;
+                LF << it1->second.get_name() << ";" ;
             }
-            std::cout << std::endl;
+            LF ;
             return nullptr;
         }
     }
@@ -220,3 +231,37 @@ void Directory::rename(const char* new_name)
     description->set_name(new_name);
 }
 
+bool Directory::empty()
+{
+    return this->sub_directories->empty() &&
+        this->files->empty();
+}
+
+void Directory::clean(FileSystem& fs)
+{
+    TFileID id = 0;
+    if (this->description != nullptr)
+    {
+        id = this->description->fileID;
+        fs.m_file_descriptions->erase(this->description->fileID);
+        this->description = nullptr;
+    }
+
+    if (this->sub_directories != nullptr)
+    {
+        fs.m_seg->destroy_ptr<TDirectorySet>(this->sub_directories.get());
+        this->sub_directories = nullptr;
+    }
+
+    if (this->files != nullptr)
+        this->files = nullptr;
+
+    if(id != 0)
+        fs.m_file_id_manager->reg_deleted_file(id);
+}
+
+
+FileDescription Directory::get_description()
+{
+    return *this->description.get();
+}

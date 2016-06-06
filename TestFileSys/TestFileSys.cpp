@@ -1,5 +1,8 @@
-// TestFileSys.cpp : Defines the entry point for the console application.
-//
+/**
+@file
+Unit tests console app for testing FileSystem implementation in details
+@author Alexey Medvedev
+*/
 #include <Windows.h>
 #include <iostream>
 #include <iterator>
@@ -14,30 +17,9 @@
 #include "file_description.h"
 #include "fileid_manager.h"
 #include "file.h"
+#include "log.h"
 
 namespace bip = boost::interprocess;
-
-
- //void TestRandomFileDelete()
- //{
- //    // open file system
- //    FileSystem fs("./demo1.bin");
-
- //    for (int i = 0; i < 100; i++)
- //    {
- //        TFileID id = rand() % 1'000'000;
- //        // TODO: incapsulate to FileRemove()
- //        if (fs.m_filesData->erase(id) != 1)
- //        {
- //            std::cout << "File data id=" << id << " not found." << std::endl;
- //        }
- //        if (fs.m_files->erase(id) != 1)
- //        {
- //            std::cout << "File id=" << id << " not found" << std::endl;
- //        }
- //    }
- //}
-
 
  void TestPrintFilesInfo(TFileID first, TFileID last)
  {
@@ -50,8 +32,8 @@ namespace bip = boost::interprocess;
          if (pair != fs.m_file_descriptions->end())
          {
              const FileDescription& fds = pair->second;
-             std::cout << "File id=" << fds.fileID << " name:  " << fds.name;
-             std::cout << " path: " << fds.path << " size=" << fds.size << std::endl;
+             LF << "File id=" << fds.fileID << " name:  " << fds.name;
+             LF << " path: " << fds.path << " size=" << fds.size ;
          }
      }
  }
@@ -62,26 +44,26 @@ namespace bip = boost::interprocess;
      auto it = dir->sub_directories->begin();
      auto end = dir->sub_directories->end();
      if (tabs == 0)
-         std::cout << "=========== directoriy list begin =========" << std::endl;
+         LF << "=========== directoriy list begin =========" ;
      for (; it != end; ++it)
      {
          TDirectoryPtr tmp(&it->second);
          for (int i = 0; i < tabs; i++)
-             std::cout << "\t";
-         std::cout << "Directory \"" << tmp->get_name();
-         std::cout << "\" subdirectories: " << tmp->sub_directories->size();
+             LF << "\t";
+         LF << "Directory \"" << tmp->get_name();
+         LF << "\" subdirectories: " << tmp->sub_directories->size();
          auto parent = tmp->parent;
          if (parent != nullptr)
          {
-             std::cout << " parent: \"" << parent->get_name() << "\"";
+             LF << " parent: \"" << parent->get_name() << "\"";
          }
-         std::cout << std::endl;
+         LF ;
          tabs++;
          PrintDirectories(tmp, tabs);
          tabs--;
      }
      if(tabs == 0)
-         std::cout << "=========== directoriy list end =========" << std::endl;
+         LF << "=========== directoriy list end =========" ;
  }
 
  void TestDirectory()
@@ -106,7 +88,7 @@ namespace bip = boost::interprocess;
      }
      {
          FileSystem fs;
-         std::cout << "Root directory \"" << "" << fs.m_directories->get_name() << "\" exists." << std::endl;
+         LF << "Root directory \"" << "" << fs.m_directories->get_name() << "\" exists." ;
          const char* test = "TestDirectory";
          PrintDirectories(fs.m_directories);
 
@@ -143,7 +125,7 @@ namespace bip = boost::interprocess;
      }
      {
          FileSystem fs;
-         std::cout << "Root directory \"" << "" << fs.m_directories->get_name() << "\" exists." << std::endl;
+         LF << "Root directory \"" << "" << fs.m_directories->get_name() << "\" exists." ;
          const char* test = "TestDirectory";
          PrintDirectories(fs.m_directories);
          shared_string stest = mkstr(test, fs);
@@ -158,7 +140,7 @@ namespace bip = boost::interprocess;
          }
          else
          {
-             std::cout << "Error: created directory didn't found after storage reopened." << std::endl;
+             LF << "Error: created directory didn't found after storage reopened." ;
              assert(0);
          }
          PrintDirectories(fs.m_directories);
@@ -272,9 +254,9 @@ namespace bip = boost::interprocess;
          assert(!dir->sub_directories->empty());
          //assert(dir->description->fileID != 0);
          assert(!std::string(dir->description->name).empty());
-         std::cout << "Found directory \"" << dir->get_name() << "\"" << std::endl;
+         LF << "Found directory \"" << dir->get_name() << "\"" ;
          std::string path = dir->get_path();
-         std::cout << "Found directory path is \"" << path << "\"" << std::endl;
+         LF << "Found directory path is \"" << path << "\"" ;
          if (search != path)
              return 1;
      }
@@ -292,7 +274,7 @@ namespace bip = boost::interprocess;
              dir = fs.create_directory(path.c_str());
              if (dir == NULL)
                  return i + 1;
-             std::cout << "Dir created \"" << dir->get_path() << "\"" << std::endl;
+             LF << "Dir created \"" << dir->get_path() << "\"" ;
              path = dir->get_path().append("/test_directory").append(std::to_string(i));
          }
          path = dir->get_path();
@@ -306,7 +288,7 @@ namespace bip = boost::interprocess;
          TDirectoryPtr dir = Directory::find_directory(fs, fs.m_directories, path.c_str());
          if (dir == NULL)
              return 20;
-         std::cout << "Found directory \"" << dir->get_path() << "\"" << std::endl;
+         LF << "Found directory \"" << dir->get_path() << "\"" ;
          if (dir->get_name() == NULL)
              return 21;
          if (dir->get_path() != path)
@@ -498,10 +480,13 @@ namespace bip = boost::interprocess;
      // TODO: check memory leaks. create and remove file in cycle. size of storage should not increase
      return 0;
  }
+
  
 int main()
 {
     int rc;
+    // setup logging filter
+    g_level = boost::log::trivial::severity_level::error;
 
     try
     {
@@ -509,7 +494,7 @@ int main()
         fs.remove_storage();
     }
     catch (...) {}
-    //TestRandomFileDelete();
+
     //TestRemoveCreateFiles();
     //TestPrintFilesInfo(1, 100);
     
@@ -567,6 +552,7 @@ int main()
         assert(0);
     }
 
+    g_level = boost::log::trivial::severity_level::error;
     rc = TestTopLevelFileDescription();
     if (rc == 0)
         std::cout << "Test TestTopLevelFileDescription passed" << std::endl;

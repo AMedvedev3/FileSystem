@@ -1,12 +1,21 @@
 #pragma once
+/**
+@file
+FileDescription class definition for FileSystem
+@author Alexey Medvedev
+*/
 #include "common.h"
 
 enum DescriptionType { DirectoryType = 0, FileType = 1 };
 
+// The File Descriptions contains file (or directory) meta data
+// It keeps the file name, file size, creation date and changed data.
+// The File and his FileDescription identified by fileID field.
+// Type shows is that description of file or directory
+// Note: the dates and attributes of file are not implemented yet.
+// The path reserved for future usage.
 // TODO: make functionality for create and changed time
 // TODO: make file attribute functionality
-// TODO: try to rework path and name to shared string
-// TODO: add flag empty to directories type
 struct FileDescription
 {
     FileDescription(const char* name, const char* path,

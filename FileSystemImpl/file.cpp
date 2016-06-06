@@ -1,8 +1,15 @@
+/**
+@file
+File class for FileSystem implementation
+@author Alexey Medvedev
+*/
+
 #include "common.h"
 #include "helper.h"
 #include "file.h"
 #include "directory.h"
 #include "exception.h"
+#include "log.h"
 
 File::File(TFileID id, const char* name, TDirectoryPtr& dir, FileSystem& fs)
 {
@@ -11,10 +18,12 @@ File::File(TFileID id, const char* name, TDirectoryPtr& dir, FileSystem& fs)
         this->description = fs.add_file_desc(name, NULL, 0);
         if (this->description == NULL)
         {
-            // TODO: throw exception
-            throw bad_alloc();
-            assert(0);
+            BOOST_THROW_EXCEPTION(common_exception()
+                << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
+                << errinfo_message("Cannot construct File description instance for file."));
         }
+
+        this->description->type = DescriptionType::FileType;
         this->id = this->description->fileID;
 
         auto res = fs.m_files_data->insert(
@@ -25,9 +34,9 @@ File::File(TFileID id, const char* name, TDirectoryPtr& dir, FileSystem& fs)
         this->file_data = &res.first->second;
         if (this->file_data == nullptr)
         {
-            // TODO: throw exception
-            throw bad_alloc();
-            assert(0);
+            BOOST_THROW_EXCEPTION(common_exception()
+                << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
+                << errinfo_message("Cannot construct File data instance."));
         }
 
         // add file to parent directory
@@ -40,10 +49,8 @@ File::File(TFileID id, const char* name, TDirectoryPtr& dir, FileSystem& fs)
         // TODO: move to clean() function
         if (this->id != 0)
         {
-            // TODO: do that in the destructor?
             if (this->description != nullptr)
             {
-                // TODO: is that enough maybe destroy in seg too?
                 fs.m_file_descriptions->erase(this->id);
                 this->description = nullptr;
             }
@@ -58,7 +65,9 @@ File::File(TFileID id, const char* name, TDirectoryPtr& dir, FileSystem& fs)
             fs.m_file_id_manager->reg_deleted_file(id);
             this->id = 0;
 
-            throw;
+            BOOST_THROW_EXCEPTION(common_exception()
+                << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
+                << errinfo_message("Cannot construct File instance."));
         }
     }
 }
@@ -69,9 +78,10 @@ bip::offset_ptr<File> File::construct(const char* name, TFileID id,
 {
     if (l > 1)
     {
-        std::cout << "Unrecoverable Error: not enough memory to create file." << std::endl;
-        assert(0);
-        // TODO: throw exception
+        LF << "Unrecoverable Error: not enough memory to create file." ;
+        BOOST_THROW_EXCEPTION(common_exception()
+            << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
+            << errinfo_message("Unrecoverable error. Not enough memory to construct file."));
     }
 
     bip::offset_ptr<File> file = NULL;
@@ -119,7 +129,13 @@ TFileID File::get_id()
     return description->fileID;
 }
 
-// TODO: should return last position and ref to count of written bytes
+// @buffer - buffer to write
+// @cb - size of buffer, number of bytes to write
+// @offset - start position in file where to start writing new data
+// @written - return value - returns number of really written bytes to file
+// @fs - reference to fs for inner purposes
+// @l - reentrant counter used for exception handling. Don't set it explicitely, always use default value  
+// returns last position in file after a write finished and ref to count of written bytes
 size_t File::write(const char* buffer, size_t cb, size_t offset, size_t* written, FileSystem& fs, int l)
 {
     assert(this->file_data != nullptr);
@@ -127,7 +143,7 @@ size_t File::write(const char* buffer, size_t cb, size_t offset, size_t* written
     if (l > 1)
     {
         BOOST_THROW_EXCEPTION(common_exception()
-            << errinfo_rpc_code(fs_error::STORAGE_STRUCTURE_ERROR)
+            << errinfo_fs_code(fs_error::STORAGE_STRUCTURE_ERROR)
             << errinfo_message("Unrecoverable bad allocation error."));
     }
     
@@ -135,7 +151,7 @@ size_t File::write(const char* buffer, size_t cb, size_t offset, size_t* written
     if (offset > file_data->size())
     {
         BOOST_THROW_EXCEPTION(common_exception()
-            << errinfo_rpc_code(fs_error::GENERAL_WRITE_FAULT)
+            << errinfo_fs_code(fs_error::GENERAL_WRITE_FAULT)
             << errinfo_message("Start writing position after end of file."));
     }
 
@@ -183,7 +199,7 @@ size_t File::read(char* buffer, size_t cb, size_t offset, size_t* readed)
     if (offset >= file_data->size())
     {
         BOOST_THROW_EXCEPTION(common_exception()
-            << errinfo_rpc_code(fs_error::GENERAL_READ_FAULT)
+            << errinfo_fs_code(fs_error::GENERAL_READ_FAULT)
             << errinfo_message("Start reading position after end of file."));
     }
     
@@ -204,14 +220,9 @@ void File::clean(FileSystem& fs)
 {
     if (this->id != 0)
     {
-        // TODO: do that in the destructor?
-        // TODO: we cant use that in destructor because this requires 
-        // reference to FileSystem
-    
         shared_string name = mkstr("", fs);
         if (this->description != nullptr)
         {
-            // TODO: is that enough maybe destroy in seg too?
             name = mkstr((const char*)description->name, fs);
             fs.m_file_descriptions->erase(this->id);
             this->description = nullptr;
@@ -232,4 +243,9 @@ void File::clean(FileSystem& fs)
         fs.m_file_id_manager->reg_deleted_file(id);
         this->id = 0;
     }
+}
+
+FileDescription File::get_description()
+{ 
+    return *this->description.get(); 
 }

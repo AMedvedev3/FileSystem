@@ -1,3 +1,9 @@
+/**
+@file
+Excepions implementation for FileSystem
+@author Alexey Medvedev
+*/
+
 #include "exception.h"
 
 HRESULT fs_error::fs_hr(const int fs_code)

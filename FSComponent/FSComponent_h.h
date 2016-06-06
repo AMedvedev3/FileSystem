@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Sun Jun 05 22:59:25 2016
+/* at Mon Jun 06 05:41:06 2016
  */
 /* Compiler settings for FSComponent.idl:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
@@ -82,7 +82,7 @@ enum __MIDL___MIDL_itf_FSComponent_0000_0000_0001
         FSComFileType	= 1
     } 	FSComDescTypeEnum;
 
-typedef struct FSComFileDescription
+typedef /* [helpstring] */ struct FSComFileDescription
     {
     unsigned char name[ 256 ];
     unsigned char path[ 256 ];
@@ -110,21 +110,21 @@ EXTERN_C const IID IID_IFileSystemComponent;
     IFileSystemComponent : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE RemoveStorage( void) = 0;
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveStorage( void) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE CreateFile( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE CreateFile( 
             /* [in][ref] */ unsigned char *name) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE CreateDirectory( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE CreateDirectory( 
             /* [in][ref] */ unsigned char *name) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE RemoveDirectory( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveDirectory( 
             /* [in][ref] */ unsigned char *name) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE RemoveFile( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveFile( 
             /* [in][ref] */ unsigned char *name) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE WriteFile( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE WriteFile( 
             /* [in][ref] */ unsigned char *name,
             /* [in][ref] */ unsigned char *buffer,
             /* [in] */ unsigned long long cb,
@@ -132,7 +132,7 @@ EXTERN_C const IID IID_IFileSystemComponent;
             /* [out][ref] */ unsigned long long *written_bytes,
             unsigned long long *after_position) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE ReadFile( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE ReadFile( 
             /* [in][ref] */ unsigned char *name,
             /* [out][ref] */ unsigned char *buffer,
             /* [in] */ unsigned long long cb,
@@ -140,11 +140,11 @@ EXTERN_C const IID IID_IFileSystemComponent;
             /* [out][ref] */ unsigned long long *readed_bytes,
             /* [out][ref] */ unsigned long long *after_position) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE GetFileDescription( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE GetFileDescription( 
             /* [in][ref] */ unsigned char *name,
             /* [out][in][ref] */ FSComFileDescriptionStruct **desc) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE GetDirectoryList( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE GetDirectoryList( 
             /* [in][ref] */ unsigned char *name,
             /* [out][in][ref] */ FSComFileDescriptionStruct **descriptions,
             /* [out] */ unsigned long long *count) = 0;
@@ -170,26 +170,26 @@ EXTERN_C const IID IID_IFileSystemComponent;
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IFileSystemComponent * This);
         
-        HRESULT ( STDMETHODCALLTYPE *RemoveStorage )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveStorage )( 
             IFileSystemComponent * This);
         
-        HRESULT ( STDMETHODCALLTYPE *CreateFile )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *CreateFile )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name);
         
-        HRESULT ( STDMETHODCALLTYPE *CreateDirectory )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *CreateDirectory )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name);
         
-        HRESULT ( STDMETHODCALLTYPE *RemoveDirectory )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveDirectory )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name);
         
-        HRESULT ( STDMETHODCALLTYPE *RemoveFile )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveFile )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name);
         
-        HRESULT ( STDMETHODCALLTYPE *WriteFile )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *WriteFile )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name,
             /* [in][ref] */ unsigned char *buffer,
@@ -198,7 +198,7 @@ EXTERN_C const IID IID_IFileSystemComponent;
             /* [out][ref] */ unsigned long long *written_bytes,
             unsigned long long *after_position);
         
-        HRESULT ( STDMETHODCALLTYPE *ReadFile )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *ReadFile )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name,
             /* [out][ref] */ unsigned char *buffer,
@@ -207,12 +207,12 @@ EXTERN_C const IID IID_IFileSystemComponent;
             /* [out][ref] */ unsigned long long *readed_bytes,
             /* [out][ref] */ unsigned long long *after_position);
         
-        HRESULT ( STDMETHODCALLTYPE *GetFileDescription )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *GetFileDescription )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name,
             /* [out][in][ref] */ FSComFileDescriptionStruct **desc);
         
-        HRESULT ( STDMETHODCALLTYPE *GetDirectoryList )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *GetDirectoryList )( 
             IFileSystemComponent * This,
             /* [in][ref] */ unsigned char *name,
             /* [out][in][ref] */ FSComFileDescriptionStruct **descriptions,

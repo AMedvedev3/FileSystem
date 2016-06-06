@@ -1,3 +1,8 @@
+/**
+@file
+This module contains helper functions and utility classes for FileSystem
+@author Alexey Medvedev
+*/
 #include "helper.h"
 #include <functional>
 #include <numeric>
@@ -75,8 +80,6 @@ std::string ParsedPath::get_full_path()
 
 bool is_valid_path_name(const char* path)
 {
-    // TODO: it should contain root directory
-
     if (path == NULL)
         return false;
 
@@ -94,8 +97,6 @@ bool is_valid_path_name(const char* path)
 
     if (s.find_last_not_of(' ') + 1 != s.length())
         return false;
-
-    // TODO: check that it contains 
 
     // check for special symbols see 
     // like in Windows https://msdn.microsoft.com/en-gb/library/windows/desktop/aa365247(v=vs.85).aspx#naming_conventions

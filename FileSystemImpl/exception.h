@@ -1,4 +1,9 @@
 #pragma once
+/**
+@file
+Excepions definition for FileSystem
+@author Alexey Medvedev
+*/
 #include <comdef.h>
 #include <boost/exception/exception.hpp>
 #include <boost/exception/error_info.hpp>
@@ -33,22 +38,3 @@ namespace fs_error {
     HRESULT fs_hr(const int fs_code);
 }
 
-#define FS_REPORT_EXCEPTIONS(reply) \
-    catch (boost::exception const& e) \
-    { if (int const * c = boost::get_error_info<errinfo_fs_code>(e)) \
-        reply.Error(*c, boost::diagnostic_information(e)); \
-      else reply.Error(::rpc_error::UNKNOWN_ERROR, boost::diagnostic_information(e)); \
-      return; } \
-    catch (std::exception const& e) \
-    { reply.Error(::rpc_error::UNKNOWN_ERROR, e.what()); return; }
-
-
-
-#define FS_REPORT_COM_EXCEPTIONS(reply) \
-    catch (boost::exception const& e) \
-    { if (int const * c = boost::get_error_info<errinfo_fs_code>(e)) \
-        reply.Error(*c, boost::diagnostic_information(e)); \
-      else reply.Error(::rpc_error::UNKNOWN_ERROR, boost::diagnostic_information(e)); \
-       } \
-    catch (std::exception const& e) \
-    { reply.Error(::rpc_error::UNKNOWN_ERROR, e.what()); }
